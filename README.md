@@ -6,7 +6,7 @@ Entity and Relationship Extraction from the MITRE ATT&CK Dataset using Cyber Thr
 
 This project implements an automated evaluation framework for extracting cybersecurity entities and relationships from MITRE ATT&CK data using domain-specific NLP models.
 
-The system combines MITRE ATT&CK datasets, generates structured evaluation probes, runs masked language model inference, and computes performance metrics including Precision, Recall, and F1-Score.
+The system combines MITRE ATT&CK datasets, generates structured evaluation probes, runs masked language model inference, extracts entity relationships, and computes performance metrics including Precision, Recall, and F1-Score.
 
 The primary objective is to benchmark cybersecurity language models on their ability to recover MITRE ATT&CK tactic information from contextual threat intelligence text.
 
@@ -28,11 +28,13 @@ The primary objective is to benchmark cybersecurity language models on their abi
 ## Models Evaluated
 
 ### SecureBERT
+
 - Model: `ehsanaghaei/SecureBERT`
 - Architecture: RoBERTa-based Masked Language Model
-- Domain: Cybersecurity text
+- Domain: Cybersecurity Text
 
 ### CTI-BERT
+
 - Model: `ibm-research/CTI-BERT`
 - Architecture: BERT-based Masked Language Model
 - Domain: Cyber Threat Intelligence (CTI)
@@ -40,9 +42,11 @@ The primary objective is to benchmark cybersecurity language models on their abi
 ### Models Not Evaluated
 
 #### BERT-BiLSTM-CRF
+
 Could not be evaluated because the publicly available repository did not contain the required trained model weights.
 
 #### LLaMA-3.1-8B-Instruct
+
 Could not be evaluated due to network restrictions preventing model download and hardware limitations for local inference.
 
 ---
@@ -71,7 +75,7 @@ Contains:
 - Mitigation Steps
 - Examples
 
-Dataset Source:
+### Dataset Source
 
 https://ieee-dataport.org/documents/mitre-attack-dataset-knowledge-graph-enhanced-rag-cyber-threat-intelligence
 
@@ -81,8 +85,7 @@ https://ieee-dataport.org/documents/mitre-attack-dataset-knowledge-graph-enhance
 
 ```text
 .
-├── run_experiment.py
-├── evaluate_results.py
+├── main.py
 ├── requirements.txt
 ├── README.md
 ├── Attackmitre.xlsx
@@ -115,15 +118,15 @@ attack_df = attack_df.explode("Group Techniques")
 attack_df["Group Techniques"] = attack_df["Group Techniques"].str.strip()
 ```
 
-The resulting dataset is merged with MITRE ATT&CK descriptions using the ATT&CK technique ID.
+The resulting dataset is merged with MITRE ATT&CK descriptions using ATT&CK technique IDs.
 
 ---
 
-### Cloze Task Evaluation
+### Cloze-Task Evaluation
 
 The evaluated models are Masked Language Models (MLMs).
 
-Instead of performing direct NER classification, the experiment evaluates them using a cloze-task methodology.
+Instead of performing direct Named Entity Recognition (NER), the experiment evaluates them using a cloze-task methodology.
 
 Example:
 
@@ -137,7 +140,7 @@ Expected prediction:
 Hash
 ```
 
-If the correct token appears in the model's Top-10 predictions, it is counted as a successful prediction.
+If the correct token appears within the model's Top-10 predictions, the prediction is considered successful.
 
 ---
 
@@ -173,7 +176,7 @@ cd mitre-attack-entity-relation-extraction
 
 ### Create Virtual Environment
 
-Windows:
+#### Windows
 
 ```powershell
 python -m venv .venv
@@ -181,7 +184,7 @@ python -m venv .venv
 .venv\Scripts\activate
 ```
 
-Linux / macOS:
+#### Linux / macOS
 
 ```bash
 python -m venv .venv
@@ -202,34 +205,57 @@ pip install -r requirements.txt
 Execute:
 
 ```bash
-python run_experiment.py
+python main.py
 ```
 
 The script performs:
 
-1. Dataset loading
-2. Dataset preprocessing
-3. Probe generation
-4. Model inference
-5. Relationship extraction
-6. Result generation
+1. Loads Attackmitre.xlsx and MitreEnterprise.xlsx
+2. Explodes semicolon-separated ATT&CK technique IDs
+3. Merges ATT&CK techniques with descriptions
+4. Generates cloze-task evaluation probes
+5. Runs SecureBERT and CTI-BERT inference
+6. Extracts entity relationships
+7. Computes Precision, Recall, and F1-Score
+8. Saves evaluation outputs
 
 ---
 
-## Running Evaluation
+## Generated Outputs
 
-Execute:
+After execution, the following files are generated:
 
-```bash
-python evaluate_results.py
+### entity_relationship_output.json
+
+Contains:
+
+- Extracted entity relationships
+- Model predictions
+- Ground-truth tokens
+- Evaluation metadata
+
+Example:
+
+```json
+{
+  "entity_1": "APT1",
+  "relationship": "USES",
+  "entity_2": "hash",
+  "correct": true
+}
 ```
 
-Outputs:
+### evaluation_results.csv
 
-```text
-evaluation_results.csv
-entity_relationship_output.json
-```
+Contains:
+
+- Model
+- Precision
+- Recall
+- F1-Score
+- True Positives (TP)
+- False Positives (FP)
+- False Negatives (FN)
 
 ---
 
@@ -251,7 +277,7 @@ entity_relationship_output.json
 
 ### Best Performing Model
 
-CTI-BERT achieved the highest performance with:
+CTI-BERT achieved the highest performance:
 
 ```text
 Precision : 0.7549
@@ -263,51 +289,13 @@ The results indicate that CTI-specific pretraining provides a measurable advanta
 
 ---
 
-## Output Files
-
-### entity_relationship_output.json
-
-Contains:
-
-- APT group
-- ATT&CK technique
-- Ground truth tokens
-- Model predictions
-- Extracted relationships
-- Evaluation results
-
-Example:
-
-```json
-{
-  "entity_1": "APT1",
-  "relationship": "USES",
-  "entity_2": "hash",
-  "correct": true
-}
-```
-
-### evaluation_results.csv
-
-Contains:
-
-- Model
-- Precision
-- Recall
-- F1-Score
-- TP
-- FP
-- FN
-
----
-
 ## Challenges Encountered
 
 ### Semicolon-Separated ATT&CK IDs
 
 The ATT&CK techniques were stored as semicolon-separated values, preventing direct joins.
 
-Solution:
+**Solution**
 
 - Split values
 - Explode rows
@@ -317,7 +305,7 @@ Solution:
 
 An early implementation leaked answers into prompts, producing unrealistically perfect scores.
 
-Solution:
+**Solution**
 
 - Build ground truth from ATT&CK tactic keywords
 - Mask only target tokens
@@ -326,7 +314,7 @@ Solution:
 
 MLM pipelines fail when multiple mask tokens exist in a single prompt.
 
-Solution:
+**Solution**
 
 - Enforce exactly one mask token per evaluation probe
 
@@ -334,7 +322,7 @@ Solution:
 
 Offline Hugging Face cache resolution failed because Windows blocked symbolic links.
 
-Solution:
+**Solution**
 
 - Implement direct snapshot-folder path resolution
 
