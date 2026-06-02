@@ -1,0 +1,58 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Tool caches
+.cache/
+.pytest_cache/
+.mypy_cache/
+
+# Environment variables / secrets
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+
+
+# Word documents
+*.docx
+
+# Model files
+*.pt
+*.pth
+*.bin
+*.ckpt
+
+# IDE files
+.vscode/
+.idea/
+
+# Json output files
+output.json
+entity_relationship_output.json
+
+
+# CSV output files
+evaluation_results.csv
+model_evaluation_table.csv
+
+# Demo files 
