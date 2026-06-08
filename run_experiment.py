@@ -211,16 +211,3 @@ for model in models_list:
         "F1-Score": round(f1_score, 4)
     }
 
-# ==========================================
-# 8. PRINT THE FINAL EXPERIMENT TABLE
-# ==========================================
-df_results = pd.DataFrame.from_dict(metrics_results, orient='index')
-
-print("\n==================================================")
-print("             FINAL EXPERIMENT RESULTS             ")
-print("==================================================")
-print(df_results)
-print("==================================================\n")
-
-df_results.to_csv("model_evaluation_table.csv")
-print("Metrics successfully compiled and saved to 'model_evaluation_table.csv'!")
