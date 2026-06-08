@@ -53,52 +53,7 @@ def resolve_absolute_local_path(repo_id, base_cache=CACHE_DIR):
 path_securebert = resolve_absolute_local_path("ehsanaghaei/SecureBERT")
 path_ctibert    = resolve_absolute_local_path("ibm-research/CTI-BERT")
 
-# ==========================================
-# 3. LOADING & PREPROCESSING DATASETS 
-# ==========================================
-print("\nLoading and cleaning datasets from Excel files...")
-try:
-    attack_df = pd.read_excel("Attackmitre.xlsx")
-    enterprise_df = pd.read_excel("MitreEnterprise.xlsx")
-except FileNotFoundError as e:
-    print(f"Error: Could not find Excel files! Details: {e}")
-    exit(1)
+=======\n")
 
-attack_df.columns = attack_df.columns.str.strip()
-enterprise_df.columns = enterprise_df.columns.str.strip()
-
-attack_df['Group Techniques'] = attack_df['Group Techniques'].fillna('').astype(str)
-attack_df['Group Techniques'] = attack_df['Group Techniques'].apply(
-    lambda x: [i.strip() for i in x.split(';') if i.strip() and i.strip().lower() != 'nan']
-)
-attack_df = attack_df.explode('Group Techniques')
-attack_df = attack_df[attack_df['Group Techniques'].astype(str).str.strip() != '']
-
-print("Merging MITRE datasets on 'Group Techniques' -> 'Tactic ID'...")
-merged_df = pd.merge(attack_df, enterprise_df, left_on="Group Techniques", right_on="Tactic ID")
-print(f"Successfully merged! Total interactive rows to process: {len(merged_df)}")
-
-# ==========================================
-# 4. INITIALIZE PIPELINES DIRECTLY FROM DISK
-# ==========================================
-print("\nInitializing Local NLP Pipelines from Absolute Disk Folders...")
-
-# We NO LONGER pass `model_kwargs={"local_files_only": True}` because `TRANSFORMERS_OFFLINE=1` 
-# already handles this globally. This prevents the "multiple values" crash.
-
-try:
-    print(f"-> Loading SecureBERT from: {path_securebert}")
-    secure_bert_pipe = pipeline("fill-mask", model=path_securebert, tokenizer=path_securebert, device=device)
-except Exception as e:
-    print(f"Skipping SecureBERT due to loading constraints: {e}")
-    secure_bert_pipe = None
-
-try:
-    print(f"-> Loading CTI-BERT from: {path_ctibert}")
-    cti_bert_pipe = pipeline("fill-mask", model=path_ctibert, tokenizer=path_ctibert, device=device)
-except Exception as e:
-    print(f"Skipping CTI-BERT due to loading constraints: {e}")
-    cti_bert_pipe = None
-
-
-
+df_results.to_csv("model_evaluation_table.csv")
+print("Metrics successfully compiled and saved to 'model_evaluation_table.csv'!")
