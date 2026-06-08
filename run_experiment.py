@@ -166,48 +166,4 @@ with open("output.json", "w", encoding="utf-8") as f:
 print("🎉 Extractions saved completely to: output.json")
 
 
-# ==========================================
-# 7. METRICS CALCULATOR ENGINE
-# ==========================================
-print("\nExecuting Token-Overlap Evaluation Engine...")
-metrics_results = {}
-
-for model in models_list:
-    global_tp, global_fp, global_fn = 0, 0, 0
-    
-    for row in final_output:
-        gt_tactic = str(row["ground_truth"]["Tactic_Name"]).strip().lower()
-        gt_tactic_clean = re.sub(r'[^a-zA-Z ]', ' ', gt_tactic)
-        gt_tokens = set([w for w in gt_tactic_clean.split() if w not in STOPWORDS and len(w) > 2])
-        
-        extractions = row["extractions"].get(model, [])
-        pred_tokens = set()
-        
-        for ext in extractions:
-            pred_word = ext.get("entity_2", "").strip().lower()
-            pred_word_clean = re.sub(r'[^a-zA-Z ]', ' ', pred_word)
-            for w in pred_word_clean.split():
-                if w not in STOPWORDS and len(w) > 2:
-                    pred_tokens.add(w)
-        
-        if not gt_tokens:
-            continue
-            
-        row_tp = len(pred_tokens.intersection(gt_tokens))
-        row_fp = len(pred_tokens - gt_tokens)
-        row_fn = len(gt_tokens - pred_tokens)
-        
-        global_tp += row_tp
-        global_fp += row_fp
-        global_fn += row_fn
-
-    precision = global_tp / (global_tp + global_fp) if (global_tp + global_fp) > 0 else 0.0
-    recall = global_tp / (global_tp + global_fn) if (global_tp + global_fn) > 0 else 0.0
-    f1_score = (2 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
-    
-    metrics_results[model] = {
-        "Precision": round(precision, 4),
-        "Recall": round(recall, 4),
-        "F1-Score": round(f1_score, 4)
-    }
 
