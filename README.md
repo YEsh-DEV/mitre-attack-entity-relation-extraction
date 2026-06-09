@@ -369,8 +369,3 @@ https://ieee-dataport.org/documents/mitre-attack-dataset-knowledge-graph-enhance
 
 ---
 
-## Author
-
-**Yesh**
-
-Research Project: MITRE ATT&CK Entity and Relationship Extraction using Cyber Threat Intelligence Language Models.
